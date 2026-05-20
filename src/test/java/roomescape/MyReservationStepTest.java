@@ -124,11 +124,34 @@ public class MyReservationStepTest extends IntegrationTest {
                     .statusCode(400)
                     .body("message", is("필수 요청 파라미터가 누락되었습니다."));
         }
+
+        @Test
+        @DisplayName("name 파라미터가 공백이면 400을 반환한다")
+        void name_공백() {
+            RestAssured.given().log().all()
+                    .when().get("/user/reservations?name=   ")
+                    .then().log().all()
+                    .statusCode(400)
+                    .body("message", is("이름은 비어 있을 수 없습니다."));
+        }
+
     }
 
     @Nested
     @DisplayName("내 예약 취소")
     class MyReservationCancel {
+        @Test
+        @DisplayName("name 파라미터가 공백이면 400을 반환한다")
+        void name_공백() {
+            Long reservationId = helper.insertReservationAndReturnId("브라운", FUTURE_DATE_1, timeId10, themeId);
+
+            RestAssured.given().log().all()
+                    .when().delete("/user/reservations/" + reservationId + "?name=   ")
+                    .then().log().all()
+                    .statusCode(400)
+                    .body("message", is("이름은 비어 있을 수 없습니다."));
+        }
+
 
         @Test
         @DisplayName("본인의 미래 예약을 취소하면 204를 반환하고 실제로 삭제된다")

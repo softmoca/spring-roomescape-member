@@ -1,8 +1,10 @@
 package roomescape.controller;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import java.util.List;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -19,6 +21,7 @@ import roomescape.controller.dto.ReservationUpdateRequest;
 import roomescape.service.ReservationService;
 import roomescape.service.dto.ReservationResult;
 
+@Validated
 @RestController
 @RequestMapping("/user/reservations")
 public class UserReservationController {
@@ -37,7 +40,7 @@ public class UserReservationController {
     }
 
     @GetMapping
-    public List<ReservationResponse> listByName(@RequestParam String name) {
+    public List<ReservationResponse> listByName(@RequestParam @NotBlank(message = "이름은 비어 있을 수 없습니다.") String name) {
         return reservationService.findByName(name).stream()
                 .map(ReservationResponse::from)
                 .toList();
@@ -45,7 +48,7 @@ public class UserReservationController {
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void cancel(@PathVariable Long id, @RequestParam String name) {
+    public void cancel(@PathVariable Long id, @NotBlank(message = "이름은 비어 있을 수 없습니다.") @RequestParam String name) {
         reservationService.deleteByOwner(id, name);
     }
 

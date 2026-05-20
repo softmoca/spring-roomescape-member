@@ -1,5 +1,6 @@
 package roomescape.exception;
 
+import jakarta.validation.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -51,7 +52,7 @@ public class GlobalExceptionHandler {
     }
 
     //아래 부터는 스프링이 던지는 요청 형식 예외
-    // @Valid 검증 실패 (DTO 필드 검증)
+    //  @RequestBody  DTO 검증 실패( @Valid로 검증한 객체의 필드 제약 위반)
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationFailed(MethodArgumentNotValidException e) {
         String message = e.getBindingResult().getFieldErrors().stream()
@@ -62,6 +63,19 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.BAD_REQUEST)
                 .body(new ErrorResponse(message));
     }
+
+    // 컨트롤러 메서드 파라미터 검증 실패 (@RequestParam, @PathVariable 등의 제약 위반)
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ErrorResponse> handleConstraintViolation(ConstraintViolationException e) {
+        String message = e.getConstraintViolations().stream()
+                .map(v -> v.getMessage())
+                .findFirst()
+                .orElse("입력값이 올바르지 않습니다.");
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse(message));
+    }
+
 
     // 요청 본문 파싱 실패 (잘못된 JSON, 잘못된 날짜 형식 등).
     @ExceptionHandler(HttpMessageNotReadableException.class)

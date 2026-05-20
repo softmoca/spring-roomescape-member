@@ -20,7 +20,7 @@ class ReservationTimeTest {
     @Test
     @DisplayName("DB에서 재구성할 수 있다")
     void DB에서_재구성할_수_있다() {
-        assertDoesNotThrow(() -> ReservationTime.reconstitute(1L, LocalTime.of(10, 0)));
+        assertDoesNotThrow(() -> ReservationTime.withId(1L, LocalTime.of(10, 0)));
     }
 
     @Test

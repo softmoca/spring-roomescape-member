@@ -20,17 +20,17 @@ public class JdbcReservationRepository implements ReservationRepository {
     private final JdbcTemplate jdbcTemplate;
 
     private static final RowMapper<Reservation> ROW_MAPPER = (rs, rowNum) -> {
-        ReservationTime time = ReservationTime.reconstitute(
+        ReservationTime time = ReservationTime.withId(
                 rs.getLong("time_id"),
                 rs.getTime("time_start_at").toLocalTime()
         );
-        Theme theme = Theme.reconstitute(
+        Theme theme = Theme.withId(
                 rs.getLong("theme_id"),
                 rs.getString("theme_name"),
                 rs.getString("theme_description"),
                 rs.getString("theme_thumbnail")
         );
-        return Reservation.reconstitute(
+        return Reservation.withId(
                 rs.getLong("reservation_id"),
                 rs.getString("reservation_name"),
                 rs.getDate("reservation_date").toLocalDate(),
@@ -79,7 +79,7 @@ public class JdbcReservationRepository implements ReservationRepository {
         }, keyHolder);
 
         Long id = keyHolder.getKey().longValue();
-        return Reservation.reconstitute(
+        return Reservation.withId(
                 id,
                 reservation.getName(),
                 reservation.getDate(),

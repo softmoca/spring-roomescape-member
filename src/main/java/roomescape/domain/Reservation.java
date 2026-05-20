@@ -22,7 +22,6 @@ public class Reservation {
         this.theme = theme;
     }
 
-    // 새 예약 생성 (저장 전) - 정책 검증 포함
     public static Reservation create(String name, LocalDate date,
                                      ReservationTime time, Theme theme,
                                      ReservationPolicy policy) {
@@ -30,9 +29,8 @@ public class Reservation {
         return new Reservation(null, name, date, time, theme);
     }
 
-    // DB 재구성 (저장 후) - 불변식 검증만
-    public static Reservation reconstitute(Long id, String name, LocalDate date,
-                                           ReservationTime time, Theme theme) {
+    public static Reservation withId(Long id, String name, LocalDate date,
+                                     ReservationTime time, Theme theme) {
         return new Reservation(id, name, date, time, theme);
     }
 

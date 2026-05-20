@@ -24,7 +24,7 @@ class ThemeTest {
     @Test
     @DisplayName("DB에서 재구성할 수 있다")
     void DB에서_재구성할_수_있다() {
-        assertDoesNotThrow(() -> Theme.reconstitute(1L, VALID_NAME, VALID_DESCRIPTION, VALID_THUMBNAIL));
+        assertDoesNotThrow(() -> Theme.withId(1L, VALID_NAME, VALID_DESCRIPTION, VALID_THUMBNAIL));
     }
 
     @Test

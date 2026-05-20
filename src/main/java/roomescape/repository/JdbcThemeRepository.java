@@ -19,7 +19,7 @@ public class JdbcThemeRepository implements ThemeRepository {
     private final JdbcTemplate jdbcTemplate;
 
     private static final RowMapper<Theme> ROW_MAPPER = (rs, rowNum) ->
-            Theme.reconstitute(
+            Theme.withId(
                     rs.getLong("id"),
                     rs.getString("name"),
                     rs.getString("description"),
@@ -28,7 +28,7 @@ public class JdbcThemeRepository implements ThemeRepository {
 
     private static final RowMapper<PopularThemeProjection> POPULAR_ROW_MAPPER = (rs, rowNum) ->
             new PopularThemeProjection(
-                    Theme.reconstitute(
+                    Theme.withId(
                             rs.getLong("id"),
                             rs.getString("name"),
                             rs.getString("description"),
@@ -74,7 +74,7 @@ public class JdbcThemeRepository implements ThemeRepository {
         }, keyHolder);
 
         Long id = keyHolder.getKey().longValue();
-        return Theme.reconstitute(id, theme.getName(), theme.getDescription(), theme.getThumbnailUrl());
+        return Theme.withId(id, theme.getName(), theme.getDescription(), theme.getThumbnailUrl());
     }
 
     @Override

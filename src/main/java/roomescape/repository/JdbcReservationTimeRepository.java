@@ -18,7 +18,7 @@ public class JdbcReservationTimeRepository implements ReservationTimeRepository 
 
     private final JdbcTemplate jdbcTemplate;
 
-    private static final RowMapper<ReservationTime> ROW_MAPPER = (rs, rowNum) -> ReservationTime.reconstitute(
+    private static final RowMapper<ReservationTime> ROW_MAPPER = (rs, rowNum) -> ReservationTime.withId(
             rs.getLong("id"),
             rs.getTime("start_at").toLocalTime()
     );
@@ -58,7 +58,7 @@ public class JdbcReservationTimeRepository implements ReservationTimeRepository 
         }, keyHolder);
 
         Long id = keyHolder.getKey().longValue();
-        return ReservationTime.reconstitute(id, time.getStartAt());
+        return ReservationTime.withId(id, time.getStartAt());
     }
 
     @Override

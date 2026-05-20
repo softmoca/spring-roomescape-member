@@ -13,13 +13,11 @@ public class ReservationTime {
         this.startAt = startAt;
     }
 
-    // 새 시간 생성 (저장 전)
     public static ReservationTime create(LocalTime startAt) {
         return new ReservationTime(null, startAt);
     }
 
-    // DB 재구성 (저장 후)
-    public static ReservationTime reconstitute(Long id, LocalTime startAt) {
+    public static ReservationTime withId(Long id, LocalTime startAt) {
         return new ReservationTime(id, startAt);
     }
 

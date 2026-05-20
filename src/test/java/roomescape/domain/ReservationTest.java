@@ -15,10 +15,10 @@ import roomescape.support.AlwaysAllowPolicy;
 class ReservationTest {
 
     private static final ReservationTime VALID_TIME =
-            ReservationTime.reconstitute(1L, LocalTime.of(10, 0));
+            ReservationTime.withId(1L, LocalTime.of(10, 0));
     private static final LocalDate VALID_DATE = LocalDate.of(2026, 1, 1);
     private static final Theme VALID_THEME =
-            Theme.reconstitute(1L, "무인도 탈출",
+            Theme.withId(1L, "무인도 탈출",
                     "갯벌이 많은 무인도를 탈출하는 흥미진진 대탈출!",
                     "https://picsum.photos/seed/roomescape1/800/600.jpg");
 
@@ -35,7 +35,7 @@ class ReservationTest {
     @DisplayName("DB에서 재구성할 수 있다")
     void DB에서_재구성할_수_있다() {
         assertDoesNotThrow(() ->
-                Reservation.reconstitute(1L, "브라운", VALID_DATE, VALID_TIME, VALID_THEME));
+                Reservation.withId(1L, "브라운", VALID_DATE, VALID_TIME, VALID_THEME));
     }
 
 
@@ -44,7 +44,7 @@ class ReservationTest {
     void throwWhenNameIsNull() {
         InvalidDomainException exception = assertThrows(
                 InvalidDomainException.class,
-                () -> Reservation.reconstitute(1L, null, VALID_DATE, VALID_TIME, VALID_THEME)
+                () -> Reservation.withId(1L, null, VALID_DATE, VALID_TIME, VALID_THEME)
         );
         assertEquals("예약자 이름은 비어 있을 수 없습니다.", exception.getMessage());
     }
@@ -54,7 +54,7 @@ class ReservationTest {
     void 이름이_빈문자열이면_예외가_발생한다() {
         assertThrows(
                 InvalidDomainException.class,
-                () -> Reservation.reconstitute(1L, "", VALID_DATE, VALID_TIME, VALID_THEME)
+                () -> Reservation.withId(1L, "", VALID_DATE, VALID_TIME, VALID_THEME)
         );
     }
 
@@ -63,7 +63,7 @@ class ReservationTest {
     void 이름이_공백만으로_이루어져_있으면_예외가_발생한다() {
         assertThrows(
                 InvalidDomainException.class,
-                () -> Reservation.reconstitute(1L, "   ", VALID_DATE, VALID_TIME, VALID_THEME)
+                () -> Reservation.withId(1L, "   ", VALID_DATE, VALID_TIME, VALID_THEME)
         );
     }
 
@@ -73,7 +73,7 @@ class ReservationTest {
         String name = "밥".repeat(31);
         InvalidDomainException exception = assertThrows(
                 InvalidDomainException.class,
-                () -> Reservation.reconstitute(1L, name, VALID_DATE, VALID_TIME, VALID_THEME)
+                () -> Reservation.withId(1L, name, VALID_DATE, VALID_TIME, VALID_THEME)
         );
         assertEquals("예약자 이름은 30자를 초과할 수 없습니다.", exception.getMessage());
     }
@@ -83,7 +83,7 @@ class ReservationTest {
     void 날짜가_null이면_예외가_발생한다() {
         InvalidDomainException exception = assertThrows(
                 InvalidDomainException.class,
-                () -> Reservation.reconstitute(1L, "브라운", null, VALID_TIME, VALID_THEME)
+                () -> Reservation.withId(1L, "브라운", null, VALID_TIME, VALID_THEME)
         );
         assertEquals("예약 날짜는 비어 있을 수 없습니다.", exception.getMessage());
     }
@@ -93,7 +93,7 @@ class ReservationTest {
     void 시간이_null이면_예외가_발생한다() {
         InvalidDomainException exception = assertThrows(
                 InvalidDomainException.class,
-                () -> Reservation.reconstitute(1L, "브라운", VALID_DATE, null, VALID_THEME)
+                () -> Reservation.withId(1L, "브라운", VALID_DATE, null, VALID_THEME)
         );
         assertEquals("예약 시간은 비어 있을 수 없습니다.", exception.getMessage());
     }
@@ -103,7 +103,7 @@ class ReservationTest {
     void 테마가_null이면_예외가_발생한다() {
         InvalidDomainException exception = assertThrows(
                 InvalidDomainException.class,
-                () -> Reservation.reconstitute(1L, "브라운", VALID_DATE, VALID_TIME, null)
+                () -> Reservation.withId(1L, "브라운", VALID_DATE, VALID_TIME, null)
         );
         assertEquals("예약 테마는 비어 있을 수 없습니다.", exception.getMessage());
     }

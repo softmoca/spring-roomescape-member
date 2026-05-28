@@ -1,11 +1,15 @@
 package roomescape.service;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import org.springframework.stereotype.Service;
 import roomescape.domain.Reservation;
 import roomescape.domain.ReservationTime;
 import roomescape.domain.Theme;
+import roomescape.domain.Waiting;
+import roomescape.domain.Waitings;
 import roomescape.domain.policy.ReservationPolicy;
 import roomescape.exception.client.BusinessRuleViolationException;
 import roomescape.exception.client.ResourceNotFoundException;
@@ -13,6 +17,8 @@ import roomescape.exception.server.DataInconsistencyException;
 import roomescape.repository.ReservationRepository;
 import roomescape.repository.ReservationTimeRepository;
 import roomescape.repository.ThemeRepository;
+import roomescape.repository.WaitingRepository;
+import roomescape.service.dto.MyReservationResult;
 import roomescape.service.dto.ReservationCreateCommand;
 import roomescape.service.dto.ReservationResult;
 import roomescape.service.dto.ReservationUpdateCommand;
@@ -25,16 +31,21 @@ public class ReservationService {
     private final ThemeRepository themeRepository;
     private final ReservationPolicy reservationPolicy;
 
+    //이
+    private final WaitingRepository waitingRepository;  // 신규 주입
+
     public ReservationService(
             ReservationRepository reservationRepository,
             ReservationTimeRepository reservationTimeRepository,
             ThemeRepository themeRepository,
-            ReservationPolicy reservationPolicy
+            ReservationPolicy reservationPolicy,
+            WaitingRepository waitingRepository
     ) {
         this.reservationRepository = reservationRepository;
         this.reservationTimeRepository = reservationTimeRepository;
         this.themeRepository = themeRepository;
         this.reservationPolicy = reservationPolicy;
+        this.waitingRepository = waitingRepository;
     }
 
 
@@ -66,12 +77,8 @@ public class ReservationService {
         reservationRepository.deleteById(id);
     }
 
-    public List<ReservationResult> findByName(String name) {
-        return reservationRepository.findByNameOrderByDateAscTimeAsc(name).stream()
-                .map(ReservationResult::from)
-                .toList();
-    }
 
+    //TODO 트랜잭션 어노테이션
     public void deleteByOwner(Long id, String name) {
         Reservation reservation = findByIdAndName(id, name);
         reservationPolicy.validateCancellable(
@@ -80,6 +87,58 @@ public class ReservationService {
         );
 
         reservationRepository.deleteById(id);
+        promoteFirstWaitingIfExists(reservation);
+    }
+
+    private void promoteFirstWaitingIfExists(Reservation canceled) {
+        Waitings waitings = new Waitings(waitingRepository.findBySlot(
+                canceled.getDate(),
+                canceled.getTime().getId(),
+                canceled.getTheme().getId()
+        ));
+
+        waitings.firstWaiting().ifPresent(first -> {
+            // 1) 대기를 예약으로 승격
+            Reservation promoted = Reservation.promote(first);
+            reservationRepository.save(promoted);
+
+            // 2) 승격된 대기 삭제
+            waitingRepository.deleteById(first.getId());
+
+            // 3) 나머지 대기 순번 당김
+            for (Waiting w : waitings.reorderAfterRemoval(first.getOrder())) {
+                waitingRepository.updateOrder(w.getId(), w.getOrder());
+            }
+        });
+    }
+
+    //제거TODO
+    public List<ReservationResult> findByName(String name) {
+        return reservationRepository.findByNameOrderByDateAscTimeAsc(name).stream()
+                .map(ReservationResult::from)
+                .toList();
+    }
+
+
+    public List<MyReservationResult> findMyReservationsAndWaitings(String name) {
+        List<MyReservationResult> results = new ArrayList<>();
+
+        //1) 내 예약을 가져와 ofReservation 팩토리로 변환
+        reservationRepository.findByNameOrderByDateAscTimeAsc(name).forEach(r ->
+                results.add(MyReservationResult.ofReservation(
+                        r.getId(), r.getDate(), r.getTime(), r.getTheme())));
+
+        //2)내 대기를 가져와 ofWaiting 팩토리로 변환
+        waitingRepository.findByName(name).forEach(w ->
+                results.add(MyReservationResult.ofWaiting(
+                        w.getId(), w.getDate(), w.getTime(), w.getTheme(), w.getOrder())));
+
+        //3) 통합 결과를 날짜,시간 순으로 정렬
+        results.sort(Comparator
+                .comparing(MyReservationResult::getDate)
+                .thenComparing(r -> r.getTime().getStartAt()));
+
+        return results;
     }
 
     public ReservationResult updateByOwner(ReservationUpdateCommand command) {

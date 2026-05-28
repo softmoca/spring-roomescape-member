@@ -34,6 +34,11 @@ public class Reservation {
         return new Reservation(id, name, date, time, theme);
     }
 
+    //이미 검증된 대기를 예약으로 승격" 이라는 의미를 가진 팩토리메서드
+    public static Reservation promote(Waiting w) {
+        return new Reservation(null, w.getName(), w.getDate(), w.getTime(), w.getTheme());
+    }
+
     private static void validate(String name, LocalDate date, ReservationTime time, Theme theme) {
         validateName(name);
         validateDate(date);

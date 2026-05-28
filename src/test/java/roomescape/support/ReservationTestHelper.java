@@ -46,4 +46,40 @@ public class ReservationTestHelper {
                 "SELECT id FROM reservation WHERE name = ? AND date = ? AND time_id = ? AND theme_id = ?",
                 Long.class, name, Date.valueOf(date), timeId, themeId);
     }
+
+    ///
+// 기존 메서드 유지 + 다음 추가
+    public Long insertWaiting(String name, LocalDate date, Long timeId, Long themeId, int order) {
+        jdbcTemplate.update(
+                "INSERT INTO waiting (name, date, time_id, theme_id, wait_order) VALUES (?, ?, ?, ?, ?)",
+                name, date.toString(), timeId, themeId, order);
+        return jdbcTemplate.queryForObject(
+                "SELECT id FROM waiting WHERE name = ? AND date = ? AND time_id = ? AND theme_id = ?",
+                Long.class, name, date.toString(), timeId, themeId);
+    }
+
+    public int findWaitingOrder(Long waitingId) {
+        return jdbcTemplate.queryForObject(
+                "SELECT wait_order FROM waiting WHERE id = ?", Integer.class, waitingId);
+    }
+
+    public boolean existsWaiting(Long waitingId) {
+        Integer count = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM waiting WHERE id = ?", Integer.class, waitingId);
+        return count != null && count > 0;
+    }
+
+    public String findReservationOwner(LocalDate date, Long timeId, Long themeId) {
+        return jdbcTemplate.queryForObject(
+                "SELECT name FROM reservation WHERE date = ? AND time_id = ? AND theme_id = ?",
+                String.class, date.toString(), timeId, themeId);
+    }
+
+    public int findReservationCount(LocalDate date, Long timeId, Long themeId) {
+        Integer count = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM reservation WHERE date = ? AND time_id = ? AND theme_id = ?",
+                Integer.class, date.toString(), timeId, themeId);
+        return count == null ? 0 : count;
+    }
+
 }
